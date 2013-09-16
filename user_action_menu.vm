@@ -1,0 +1,135 @@
+##	Get URL for 'Change Layout' page
+#set ($changeLayoutUrl = $themeDisplay.getURLLayoutTemplates().toString())
+
+##	Our menu
+<ul>
+	#if ($is_signed_in)
+		<li>
+			<a id="add-application" href="#">Add Application</a>
+		</li>
+		<li>
+			<a id="change-layout" href="#">Change Layout</a>
+		</li>
+		<li>
+			<a id="toggle-edit-controls" href="#">Toggle Edit Controls</a>
+		</li>
+		<li>
+			<a href="$my_account_url">Edit My Profile</a>
+		</li>
+		#if ($permissionChecker.isOmniadmin())
+			<li>
+				<a href="$my_account_url">Control Panel</a>
+			</li>
+		#end
+		<li>
+			<a href="$sign_out_url">Sign Out</a>
+		</li>
+	#else
+		<li>
+			<a href="$sign_in_url">Sign In</a>
+		</li>
+	#end
+</ul>
+
+##	Our JS. Ideally, all of this would be moved out to another file; but we need
+##	the 'Change Layout' bit in here to pull the URL from Velocity, so I included
+##	it all here for the sake of clarity.
+
+<script>
+
+// 'Add Application'
+AUI().use(
+	'aui-dialog',
+	'liferay-layout-configuration',
+	function(A) {
+		// Create dialog
+		var addApplicationsDialog = new A.Dialog({
+			title: 'Add Application',
+			width: 280,
+			visible: false
+		}).plug(A.Plugin.IO, {
+			after: {
+				success: function(event, id, obj) {
+					Liferay.LayoutConfiguration._dialogBody = addApplicationsDialog.get('contentBox');
+					Liferay.LayoutConfiguration._loadContent();
+				}
+			},
+			autoLoad: false,
+			data: {
+				doAsUserId: themeDisplay.getDoAsUserIdEncoded(),
+				p_l_id: themeDisplay.getPlid(),
+				p_p_id: 87,
+				p_p_state: 'exclusive'
+			},
+			showLoading: false,
+			uri: themeDisplay.getPathMain() + '/portal/render_portlet'
+		});
+	}
+);
+
+// 'Change Layout'
+AUI().use(
+	'aui-dialog',
+	'aui-dialog-iframe',
+	function(A) {
+		// Grab 'Change Layout' URL from Velocity
+		var changeLayoutUrl = '$changeLayoutUrl';
+		// Create dialog
+		var changeLayoutDialog = new A.Dialog({
+			centered: true,
+			modal: true,
+			title: 'Change Layout',
+			width: 960,
+			on: {
+				close: function() {
+					// Refresh on close to show new layout
+					document.location.href = Liferay.currentURL
+				}
+			}
+		})
+		// Load content in iframe
+		.plug(A.Plugin.DialogIframe, {
+			iframeCssClass: 'dialog-iframe',
+			uri: changeLayoutUrl
+		});
+	}
+);
+
+// Attach click handlers
+AUI().use(
+	'node',
+	function(A) {
+		// 'Add Application'
+		A.one('#add-application').on('click', function(event) {
+			event.preventDefault();
+			if (addApplicationsDialog.get('visible') == false) {
+				if (addApplicationsDialog.get('rendered') == false) {
+					addApplicationsDialog.render().show().io.start();
+				} else {
+					addApplicationsDialog.show();
+				}
+			} else {
+				addApplicationsDialog.hide();
+			}
+		});
+		// 'Change Layout'
+		A.one('#change-layout').on('click', function(event) {
+			event.preventDefault();
+			changeLayoutDialog.render().show();
+		});
+		// 'Toggle Edit Controls'
+		A.one('#toggle-edit-controls').on('click', function(event) {
+			event.preventDefault();
+			if (A.one('body').hasClass('controls-visible')) {
+				A.one('body').removeClass('controls-visible')
+					.addClass('controls-hidden');
+			} else {
+				A.one('body').removeClass('controls-hidden')
+					.addClass('controls-visible');
+			}
+		});
+
+	}
+);
+
+</script>
