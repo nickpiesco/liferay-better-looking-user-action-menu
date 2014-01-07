@@ -9,4 +9,4 @@ The Dockbar provides one-stop shopping for your Portal administration needs; but
 * Open Control Panel
 * Sign In/Sign Out
 
-[Check out the full tutorial here]().
+[Check out the full tutorial here](http://blogs.xtivia.com/home/-/blogs/building-a-better-looking-user-action-menu-in-liferay-6-1).
